@@ -28,7 +28,12 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import java.util.Arrays;
 
 /**
  * @author Ike Kennedy
@@ -63,16 +68,21 @@ public class SecurityConfiguration {
                .authorizeHttpRequests(auth -> {
                    auth.requestMatchers("/**").permitAll();
                    auth.requestMatchers("/h2-console/").permitAll();
-                   auth.requestMatchers("/auth/**").permitAll();
+                   auth.requestMatchers("/auth/register").permitAll();
+                   auth.requestMatchers("/auth/login.html").permitAll();
+                   auth.requestMatchers("/auth/login/user").hasRole("USER");
                    auth.requestMatchers("/admin/**").hasRole("ADMIN");
                    auth.requestMatchers("/user/**").hasAnyRole("ADMIN", "USER");
                    auth.anyRequest().authenticated();
                });
-       http
-               .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-               .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-               .formLogin(Customizer.withDefaults()).formLogin().loginPage("/login").permitAll();
-               return http.build();
+        http
+                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .formLogin(Customizer.withDefaults()).formLogin().loginPage("/login.html")
+                .failureForwardUrl("/auth/login.html").loginPage("/auth/login.html")
+                .successForwardUrl("/auth/login/user").loginProcessingUrl("/auth/login.html").loginProcessingUrl("/login.html")
+                .loginPage("/auth/login.html").permitAll();
+        return http.build();
     }
 
     @Bean
@@ -86,13 +96,26 @@ public class SecurityConfiguration {
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
     }
+
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter(){
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         return jwtConverter;
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("https://localhost:8000/login", "https://localhost:8000/auth/login",
+                "https://localhost:8000/auth/register", "https://localhost:8000/auth/login/user",
+                "https://localhost:8000/")); //URLs you want to allow
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST")); //methods you want to allow
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

@@ -4,7 +4,7 @@ package com.ddr.authenticatedbackend.model;
 public class RegistrationDTO {
     private String username;
      private String password;
-
+    private String authority;
      public RegistrationDTO(){
          super();
      }
@@ -12,6 +12,7 @@ public class RegistrationDTO {
          super();
         this.username = username;
         this.password = password;
+        this.authority = null;
     }
 
     public String getUsername() {

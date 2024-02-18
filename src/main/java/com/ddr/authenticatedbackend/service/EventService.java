@@ -4,7 +4,6 @@ package com.ddr.authenticatedbackend.service;
 import com.ddr.authenticatedbackend.model.Event;
 import com.ddr.authenticatedbackend.model.SecurityUser;
 import com.ddr.authenticatedbackend.repository.EventDao;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +49,6 @@ public class EventService {
 
     public ResponseEntity<String> addEvent(Event event, SecurityUser findUser) {
         findUser.setEvent(event);
-
         eventDao.save(event);
         return new ResponseEntity<>("success",HttpStatus.CREATED);
     }
@@ -60,7 +58,7 @@ public class EventService {
         if(event1.contains(event)) {
             event1.remove(event);
             findUser.setEventList(event1);
-            eventDao.delete(findUser, event);
+            eventDao.deleteById(event.getEvent_Id());
         }
 
         return new ResponseEntity<>("success",HttpStatus.CREATED);

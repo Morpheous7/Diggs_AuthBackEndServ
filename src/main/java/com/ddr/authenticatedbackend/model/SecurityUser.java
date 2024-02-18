@@ -1,10 +1,7 @@
 package com.ddr.authenticatedbackend.model;
 
 
-import com.ddr.authenticatedbackend.repository.EventDao;
-import com.ddr.authenticatedbackend.repository.SecurityUserRepo;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -42,6 +40,7 @@ public class SecurityUser implements UserDetails {
     public List<Event> event;
 
     public SecurityUser(User user){
+        this.user = user;
         this.event = new ArrayList<>();
     }
 
@@ -61,7 +60,7 @@ public class SecurityUser implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> list = new ArrayList<>();
-        for (String s : user.getAuthority().toString().split(",")) {
+        for (String s : User.getAuthority().toString().split(",")) {
             SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(s);
             list.add(simpleGrantedAuthority);
         }
@@ -75,7 +74,7 @@ public class SecurityUser implements UserDetails {
      */
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return this.user.getPassword();
     }
 
     /**
@@ -86,7 +85,7 @@ public class SecurityUser implements UserDetails {
      */
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return this.user.getUsername();
     }
 
     /**
@@ -145,5 +144,38 @@ public class SecurityUser implements UserDetails {
 
     public Object getEvent() {
         return this.event;
+    }
+
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setEvent(List<Event> event) {
+        this.event = event;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SecurityUser that)) return false;
+        return getUser().equals(that.getUser()) && Objects.equals(getEvent(), that.getEvent());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUser(), getEvent());
+    }
+
+    @Override
+    public String toString() {
+        return "SecurityUser{" +
+                "id=" + id +
+                ", user=" + user +
+                ", event=" + event +
+                '}';
     }
 }

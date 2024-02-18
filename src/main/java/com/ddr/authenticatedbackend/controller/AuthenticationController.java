@@ -7,6 +7,8 @@ import com.ddr.authenticatedbackend.service.EventService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 /**
  * @author Ike Kennedy
  */
@@ -23,24 +25,31 @@ public class AuthenticationController {
         this.eventService = new EventService();
     }
 
-    public AuthenticationController(AuthenticationService authenticationService, EventService eventService) {
-        this.authenticationService = authenticationService;
-        this.eventService = eventService;
-    }
-
-   /// @PreAuthorize("hasRole('USER')")
+    /// @PreAuthorize("hasRole('USER')")
     @PostMapping("/register")
-    public User registerUser(@RequestBody RegistrationDTO body){
-        return  authenticationService.registerUser(body.getUsername(), body.getPassword());
+    public Optional<User> registerUser(@RequestBody RegistrationDTO body) {
+        return Optional.ofNullable(authenticationService.registerUser(body.getUsername(), body.getPassword()));
     }
 
-  //  @PreAuthorize(value = "hasRole('USER')")
+    /// @PreAuthorize("hasRole('USER')")
+    @GetMapping("/register")
+    public Optional<User> registerAUser(@RequestBody RegistrationDTO body) {
+        return Optional.ofNullable(authenticationService.registerUser(body.getUsername(), body.getPassword()));
+    }
+
+    //  @PreAuthorize(value = "hasRole('USER')")
     @PostMapping("/login")
-    public LoginResponseDTO loginUser(@RequestBody RegistrationDTO body) throws InstantiationException, IllegalAccessException {
+    public LoginResponseDTO loginUser(@RequestBody RegistrationDTO body) {
         return authenticationService.loginUser(body.getUsername(), body.getPassword());
     }
 
-  //  @PreAuthorize(value = "hasRole('USER')")
+    //  @PreAuthorize(value = "hasRole('USER')")
+    @GetMapping("/login.html")
+    public LoginResponseDTO loginAUser(@RequestBody RegistrationDTO body) {
+        return authenticationService.loginUser(body.getUsername(), body.getPassword());
+    }
+
+    //  @PreAuthorize(value = "hasRole('USER')")
     @PostMapping("/login/user/addEvent")
     public ResponseEntity<String> addEvent(@RequestBody Event event) {
         SecurityUser findUser = new SecurityUser(event.getEvent_Organizer(), event);
@@ -48,7 +57,7 @@ public class AuthenticationController {
         return ResponseEntity.ok("Hello from secured endpoint");
     }
 
-  //  @PreAuthorize(value = "hasRole('USER')")
+    //  @PreAuthorize(value = "hasRole('USER')")
     @PostMapping("/login/user/eventCreate")
     public ResponseEntity<String> createEvent(@RequestBody Event event) {
         SecurityUser findUser = new SecurityUser(event.getEvent_Organizer(), event);

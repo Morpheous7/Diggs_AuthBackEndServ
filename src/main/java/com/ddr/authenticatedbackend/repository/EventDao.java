@@ -22,5 +22,4 @@ import java.util.function.Function;
 @Repository
 public interface EventDao extends JpaRepository<Event, Integer> {
 
-    Optional<SecurityUser> delete(SecurityUser findUser, Event event);
 }

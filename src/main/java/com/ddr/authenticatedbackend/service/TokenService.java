@@ -3,11 +3,9 @@ package com.ddr.authenticatedbackend.service;
  * @author Ike on 1/23/2024
  */
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
@@ -18,14 +16,14 @@ import java.util.stream.Collectors;
 @Service
 public class TokenService {
 
-    @Autowired
-    private JwtEncoder jwtEncoder;
-
-    @Autowired
-    private JwtDecoder jwtDecoder;
+    private static JwtEncoder jwtEncoder;
 
 
-    public String generateJwt(Authentication auth){
+    public TokenService(JwtEncoder jwtEncoder) {
+        TokenService.jwtEncoder = jwtEncoder;
+    }
+
+    public String generateJwt(Authentication auth) {
         Instant now = Instant.now();
 
         String scope = auth.getAuthorities().stream()
@@ -38,7 +36,7 @@ public class TokenService {
                 .subject(auth.getName())
                 .claim("roles", scope)
                 .build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        return TokenService.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
 
