@@ -60,7 +60,7 @@ public class EventService {
         if(event1.contains(event)) {
             event1.remove(event);
             findUser.setEventList(event1);
-            eventDao.delete(findUser, event);
+            eventDao.deleteById(event.getEvent_Id());
         }
 
         return new ResponseEntity<>("success",HttpStatus.CREATED);
